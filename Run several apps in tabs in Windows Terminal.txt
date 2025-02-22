@@ -1,0 +1,49 @@
+# Two examples how to start multiple console applications in tabs in Windows Terminal
+# Author: Stig Brännlund 2025
+
+# Example 1
+
+function Start-DotNetApps {
+    # Array of applications with their paths
+    $appPaths = @(
+        "C:\Windows\System32\cmd.exe",  # Application 1
+        "C:\Windows\System32\cmd.exe",  # Application 2
+        "C:\Windows\System32\cmd.exe"   # Application 3
+    )
+
+    # Delay between opening tabs
+    $delay = 5
+
+    # Loop through each application in the array
+    foreach ($appPath in $appPaths) {
+        # Open a new tab with PowerShell, and run the app inside the tab
+        wt -w 0 new-tab -- powershell -Command "& '$appPath'"
+        Start-Sleep -Seconds $delay
+    }
+}
+
+
+# Example 2 with working directory
+
+
+function Start-DotNetApps {
+    # Array of applications with their paths
+    $appPaths = @(
+        "C:\Windows\System32\cmd.exe",  # Application 1
+        "C:\Windows\System32\cmd.exe",  # Application 2
+        "C:\Windows\System32\cmd.exe"   # Application 3
+    )
+
+    # Delay between opening tabs
+    $delay = 5
+
+    # Working directory for the applications
+    $workingDir = "D:\"
+
+    # Loop through each application in the array
+    foreach ($appPath in $appPaths) {
+        # Open a new tab with PowerShell, and run cmd.exe inside the tab with the specified working directory
+        wt -w 0 new-tab -- powershell -Command "Start-Process -FilePath '$appPath' -WorkingDirectory '$workingDir' -NoNewWindow"
+        Start-Sleep -Seconds $delay
+    }
+}

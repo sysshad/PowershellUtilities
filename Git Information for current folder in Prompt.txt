@@ -1,0 +1,49 @@
+# A script which modifies the prompt to include the current folder's git branch name 
+# Also adds number of commits ahead or behind
+# Author: Stig Brännlund 2025
+
+
+function Get-GitBranch {
+    $branch = ""
+    if (Test-Path .git -PathType Container) {
+        $branch = (git symbolic-ref --short HEAD 2>$null) -replace '\s', ''
+    }
+    return $branch
+}
+
+function Get-GitStatus {
+    $esc = [char]27  # ANSI Escape Character
+    $upArrow = [char]0x2191  # Unicode ↑
+    $downArrow = [char]0x2193  # Unicode ↓
+    $status = ""
+    if (Test-Path .git -PathType Container) {
+        $aheadBehind = git rev-list --left-right --count origin/$(git symbolic-ref --short HEAD)...HEAD 2>$null
+        if ($aheadBehind) {
+            $counts = $aheadBehind -split '\s+'
+            $behind = [int]$counts[0]
+            $ahead = [int]$counts[1]
+            if ($ahead -gt 0) {
+                $status += " A:${esc}[34m$upArrow$ahead${esc}[0m"  # Blue for ahead
+            }
+            if ($behind -gt 0) {
+                $status += " B:${esc}[31m$downArrow$behind${esc}[0m"  # Red for behind
+            }
+        }
+    }
+    return $status
+}
+
+function prompt {
+    $esc = [char]27  # ANSI Escape Character
+    $branch = Get-GitBranch
+    $status = Get-GitStatus
+    $currentPath = Get-Location
+
+    if ($branch) {
+        Write-Host "PS $currentPath " -NoNewline
+        Write-Host "[${esc}[32m$branch${esc}[0m$status]" -NoNewline  # Green for branch
+        return "> "
+    } else {
+        return "PS $currentPath> "
+    }
+}
